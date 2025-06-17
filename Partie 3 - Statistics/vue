@@ -1,23 +1,19 @@
-
-DROP VIEW partie3.vue;
+DROP VIEW IF EXISTS partie3.vue;
 
 CREATE VIEW partie3.vue AS
-SELECT
+SELECT 
     i.prenom,
     i.code_postal,
     c.niveau_etude,
     r.moyenne,
-    e.mention_bac,
+    e.mention_bac
 FROM partie3._individu i
 JOIN partie3._etudiant e ON i.ine = e.ine
-JOIN partie3.resultats_annee ra ON e.code_nip = ra.code_nip
-
-_candidat
-WHERE ra.m2105 IS NOT NULL;
-
+JOIN partie3._candidat c ON i.ine = c.ine
+JOIN partie3.resultats_annee r ON e.code_nip = r.code_nip
+WHERE r.m2105 IS NOT NULL;
 
 SELECT * FROM partie3.vue;
-
 
 WbExport -file=mon_fichier_csv_de_sortie.csv
          -outputDir=.
@@ -26,5 +22,4 @@ WbExport -file=mon_fichier_csv_de_sortie.csv
          -schema=partie3
          -delimiter=';'
          -header=true
-         -keyColumns=prenom,moyenne,code_postal,niveau_etude,mention_bac
-         ;
+         -keyColumns=prenom,moyenne,code_postal,niveau_etude,mention_bac;
