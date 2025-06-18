@@ -3,7 +3,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 
 # %% Chargement des données depuis le fichier CSV
-cheminFichier = "C:/Users/dougl/Mon Drive (douglasse.ylc@gmail.com)/BUT_1E2/Semestre-2/SAE-2.04/Partie 3 - Analyse statistique des données/vue.csv"
+cheminFichier = "./vue.csv"
 VueDf = pd.read_csv(cheminFichier, sep=";")
 
 print("Colonnes disponibles :", VueDf.columns)
