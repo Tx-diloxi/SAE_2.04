@@ -126,24 +126,58 @@ print("Matrice de corrélation :\n", corr_matrix)
 
 
 def coefficients_regression_lineaire(X, y):
+    """
+    Calcule les coefficients de l'hyperplan pour une régression linéaire multiple.
+
+    X : ndarray de shape (n, m)
+    y : ndarray de shape (n, 1) ou (n,)
+
+    Retourne : theta (ndarray de shape (m+1,) avec b à l'indice 0)
+    """
     n_samples = X.shape[0]
-    X_aug = np.hstack((np.ones((n_samples, 1)), X))
+
+    # Ajouter une colonne de 1 pour l'ordonnée à l'origine
+    X_aug = np.hstack((np.ones((n_samples, 1)), X))  # shape: (n, m+1)
+
+    # Formule des moindres carrés
     theta = np.linalg.inv(X_aug.T @ X_aug) @ X_aug.T @ y
+
     return theta.flatten()
 
 
 def predire_y(X, theta):
+    """
+    Calcule y_pred à partir de X et theta.
+
+    X : ndarray de shape (n, m)
+    theta : ndarray de shape (m+1,) — inclut l'intercept
+
+    Retourne : y_pred (ndarray de shape (n,))
+    """
     n_samples = X.shape[0]
-    X_aug = np.hstack((np.ones((n_samples, 1)), X))
-    return X_aug @ theta
+    X_aug = np.hstack((np.ones((n_samples, 1)), X))  # ajoute une colonne de 1
+    y_pred = X_aug @ theta
+    return y_pred
 
 
 def coefficient_correlation_multiple(y_true, y_pred):
+    """
+    Calcule le coefficient de corrélation multiple (R^2)
+
+    y_true : valeurs réelles (shape: (n,))
+    y_pred : valeurs prédites (shape: (n,))
+
+    Retourne : R² (float)
+    """
     y_true = np.ravel(y_true)
     y_pred = np.ravel(y_pred)
-    ss_res = np.sum((y_true - y_pred) ** 2)
-    ss_tot = np.sum((y_true - np.mean(y_true)) ** 2)
-    return 1 - ss_res / ss_tot
+
+    ss_res = np.sum((y_true - y_pred)**2)
+    ss_tot = np.sum((y_true - np.mean(y_true))**2)
+
+    r_squared = 1 - ss_res / ss_tot
+    return r_squared
+
 
 
 # --- Régression avec pour cible l’ordre alphabétique des prénoms ---
