@@ -37,80 +37,83 @@ VueDf['niveau_etude_num'] = VueDf['niveau_etude'].map({
 
 print(VueDf[['prenom', 'initiale']].head(50))
 
-# %% Diagramme : Nombre d’étudiants par moyenne (arrondie)
 
-VueDf['moyenne_arrondie'] = VueDf['moyenne'].round().astype(int)
-moyenne_counts = VueDf['moyenne_arrondie'].value_counts().sort_index()
+# %% Diagramme à bâtons : Moyenne en fonction de l'initiale
 
-x = list(range(0, 21))
-y = [moyenne_counts.get(i, 0) for i in x]
-
-plt.figure(figsize=(12, 6))
-plt.bar(x, y, color='slateblue')
-plt.title("Nombre d'étudiants par moyenne (arrondie)")
-plt.xlabel("Moyenne")
-plt.ylabel("Nombre d'étudiants")
-plt.xticks(x)
-plt.grid(axis='y', alpha=0.8)
-plt.show()
-
-# %% Diagramme : Nombre d’étudiants par mention au bac
-
-mentions = ['P', 'AB', 'B', 'TB']
-frequences_mentions = [
-    VueDf[VueDf['mention_bac'] == m].shape[0] for m in mentions]
-
-plt.figure(figsize=(8, 5))
-plt.bar(mentions, frequences_mentions, color='mediumseagreen')
-plt.title("Répartition des étudiant·es selon la mention au bac")
-plt.xlabel("Mention")
-plt.ylabel("Nombre d'étudiant·es")
-plt.grid(axis='y', alpha=0.8)
-plt.show()
-
-# %% Diagramme : Moyenne par initiale de prénom
-
-initiales = sorted(VueDf['initiale'].unique())
-moyennes_initiales = [VueDf[VueDf['initiale'] == ini]
-                      ['moyenne'].mean() for ini in initiales]
-
-plt.figure(figsize=(12, 6))
-plt.bar(initiales, moyennes_initiales, color='orange')
-plt.title("Moyenne par initiale de prénom")
-plt.xlabel("Initiale")
-plt.ylabel("Moyenne")
-plt.grid(axis='y', alpha=0.7)
-plt.show()
-
-# %% Diagramme : Répartition des étudiant·es selon le niveau d’étude
-
-niveaux = VueDf['niveau_etude'].unique()
-frequences_niveaux = [VueDf[VueDf['niveau_etude'] == n].shape[0]
-                      for n in niveaux]
-
-plt.figure(figsize=(10, 6))
-plt.bar(niveaux, frequences_niveaux, color='salmon')
-plt.title("Répartition des étudiant·es selon le niveau d’étude")
-plt.xlabel("Niveau d’étude")
-plt.ylabel("Nombre d’étudiant·es")
-plt.xticks(rotation=30, ha='right')
-plt.grid(axis='y', alpha=0.8)
+plt.figure(figsize=(12, 8))
+moyennes_par_initiale = VueDf.groupby(
+    'initiale')['moyenne'].mean().sort_index()
+plt.bar(moyennes_par_initiale.index, moyennes_par_initiale.values,
+        color='skyblue', edgecolor='black', linewidth=0.5)
+plt.xlabel("Initiale du prénom", fontsize=12)
+plt.ylabel("Moyenne", fontsize=12)
+plt.xticks(rotation=0)
+plt.grid(axis='y', alpha=0.3)
 plt.tight_layout()
+
+# Afficher les valeurs sur les barres
+for i, v in enumerate(moyennes_par_initiale.values):
+    plt.text(i, v + 0.1, f'{v:.2f}', ha='center', va='bottom', fontsize=10)
+
 plt.show()
 
-# %% Diagramme : Moyenne par code postal (regroupé par centaine)
+# %% Diagramme à bâtons : Code postal moyen en fonction de l'initiale
 
-VueDf['code_postal_groupe'] = VueDf['code_postal'] // 100
-groupes_cp = sorted(VueDf['code_postal_groupe'].unique())
-moyennes_cp = [VueDf[VueDf['code_postal_groupe'] == g]['moyenne'].mean()
-               for g in groupes_cp]
+plt.figure(figsize=(12, 8))
+code_postal_par_initiale = VueDf.groupby(
+    'initiale')['code_postal'].mean().sort_index()
+plt.bar(code_postal_par_initiale.index, code_postal_par_initiale.values,
+        color='orange', edgecolor='black', linewidth=0.5)
+plt.xlabel("Initiale du prénom", fontsize=12)
+plt.ylabel("Code postal moyen", fontsize=12)
+plt.xticks(rotation=0)
+plt.grid(axis='y', alpha=0.3)
+plt.tight_layout()
 
-plt.figure(figsize=(12, 6))
-plt.bar(groupes_cp, moyennes_cp, color='blue')
-plt.title("Moyenne par code postal (regroupé par centaine)")
-plt.xlabel("Code postal (x100)")
-plt.ylabel("Moyenne")
-plt.grid(axis='y', alpha=1)
+# Afficher les valeurs sur les barres
+for i, v in enumerate(code_postal_par_initiale.values):
+    plt.text(i, v + 500, f'{v:.0f}', ha='center', va='bottom', fontsize=10)
+
+plt.show()
+
+# %% Diagramme à bâtons : Niveau d'étude moyen en fonction de l'initiale
+
+plt.figure(figsize=(12, 8))
+niveau_etude_par_initiale = VueDf.groupby(
+    'initiale')['niveau_etude_num'].mean().sort_index()
+plt.bar(niveau_etude_par_initiale.index, niveau_etude_par_initiale.values,
+        color='green', edgecolor='black', linewidth=0.5)
+plt.xlabel("Initiale du prénom", fontsize=12)
+plt.ylabel("Niveau d'étude moyen (numérique)", fontsize=12)
+plt.xticks(rotation=0)
+plt.yticks([1, 2, 3, 4], ["Terminale", "Prépa", "1ère année", "2ème année"])
+plt.grid(axis='y', alpha=0.3)
+plt.tight_layout()
+
+# Afficher les valeurs sur les barres
+for i, v in enumerate(niveau_etude_par_initiale.values):
+    plt.text(i, v + 0.05, f'{v:.2f}', ha='center', va='bottom', fontsize=10)
+
+plt.show()
+
+# %% Diagramme à bâtons : Mention au bac moyenne en fonction de l'initiale
+
+plt.figure(figsize=(12, 8))
+mention_bac_par_initiale = VueDf.groupby(
+    'initiale')['mention_bac_num'].mean().sort_index()
+plt.bar(mention_bac_par_initiale.index, mention_bac_par_initiale.values,
+        color='purple', edgecolor='black', linewidth=0.5)
+plt.xlabel("Initiale du prénom", fontsize=12)
+plt.ylabel("Mention au bac moyenne (numérique)", fontsize=12)
+plt.xticks(rotation=0)
+plt.yticks([1, 2, 3, 4], ["P", "AB", "B", "TB"])
+plt.grid(axis='y', alpha=0.3)
+plt.tight_layout()
+
+# Afficher les valeurs sur les barres
+for i, v in enumerate(mention_bac_par_initiale.values):
+    plt.text(i, v + 0.05, f'{v:.2f}', ha='center', va='bottom', fontsize=10)
+
 plt.show()
 
 # %% Matrice de corrélation entre les variables numériques
@@ -122,40 +125,31 @@ print("Matrice de corrélation :\n", corr_matrix)
 
 # %% Régression linéaire multiple sans sklearn
 
-# --- Fonctions mathématiques pour la régression ---
+# Fonctions fournies en tp
 
 
 def coefficients_regression_lineaire(X, y):
     """
     Calcule les coefficients de l'hyperplan pour une régression linéaire multiple.
-
     X : ndarray de shape (n, m)
     y : ndarray de shape (n, 1) ou (n,)
-
     Retourne : theta (ndarray de shape (m+1,) avec b à l'indice 0)
     """
     n_samples = X.shape[0]
-
-    # Ajouter une colonne de 1 pour l'ordonnée à l'origine
-    X_aug = np.hstack((np.ones((n_samples, 1)), X))  # shape: (n, m+1)
-
-    # Formule des moindres carrés
+    X_aug = np.hstack((np.ones((n_samples, 1)), X))
     theta = np.linalg.inv(X_aug.T @ X_aug) @ X_aug.T @ y
-
     return theta.flatten()
 
 
 def predire_y(X, theta):
     """
     Calcule y_pred à partir de X et theta.
-
     X : ndarray de shape (n, m)
     theta : ndarray de shape (m+1,) — inclut l'intercept
-
     Retourne : y_pred (ndarray de shape (n,))
     """
     n_samples = X.shape[0]
-    X_aug = np.hstack((np.ones((n_samples, 1)), X))  # ajoute une colonne de 1
+    X_aug = np.hstack((np.ones((n_samples, 1)), X))
     y_pred = X_aug @ theta
     return y_pred
 
@@ -163,24 +157,20 @@ def predire_y(X, theta):
 def coefficient_correlation_multiple(y_true, y_pred):
     """
     Calcule le coefficient de corrélation multiple (R^2)
-
     y_true : valeurs réelles (shape: (n,))
     y_pred : valeurs prédites (shape: (n,))
-
     Retourne : R² (float)
     """
     y_true = np.ravel(y_true)
     y_pred = np.ravel(y_pred)
-
     ss_res = np.sum((y_true - y_pred)**2)
     ss_tot = np.sum((y_true - np.mean(y_true))**2)
-
     r_squared = 1 - ss_res / ss_tot
     return r_squared
 
+# %% Régression linéaire multiple sans sklearn
 
 
-# --- Régression avec pour cible l’ordre alphabétique des prénoms ---
 X = VueDf[['moyenne', 'mention_bac_num',
            'niveau_etude_num', 'code_postal']].to_numpy()
 y = VueDf['initiale_num'].to_numpy()
@@ -189,6 +179,5 @@ theta = coefficients_regression_lineaire(X, y)
 y_pred = predire_y(X, theta)
 r2 = coefficient_correlation_multiple(y, y_pred)
 
-# --- Résultats ---
-print("Coefficients du modèle (theta) :", theta)
+print("Coefficients du modèle :", theta)
 print("Coefficient de corrélation multiple R² :", r2)
