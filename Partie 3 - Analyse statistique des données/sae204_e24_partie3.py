@@ -1,16 +1,22 @@
+from sklearn.linear_model import LinearRegression
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 
 # %% Chargement des données depuis le fichier CSV
+
+# Lecture du fichier CSV avec un séparateur ';' en DataFrame pandas
 cheminFichier = "./vue.csv"
 VueDf = pd.read_csv(cheminFichier, sep=";")
 
 print("Colonnes disponibles :", VueDf.columns)
 
 # %% Prétraitement des données
-VueDf = VueDf.dropna()  # Suppression des lignes avec valeurs manquantes
-VueAr = VueDf.to_numpy()  # Conversion en tableau NumPy (facultatif)
+
+# Suppression des lignes contenant des valeurs manquantes pour éviter erreurs
+VueDf = VueDf.dropna()
+# Conversion optionnelle du DataFrame en tableau NumPy (pour certaines opérations numériques)
+VueAr = VueDf.to_numpy()
 
 # %% Normalisation des données
 
@@ -20,6 +26,7 @@ VueDf['initiale'] = VueDf['prenom'].str[0]
 # Conversion des lettres en chiffres (A=1, B=2, ..., Z=26)
 alphabet = list("ABCDEFGHIJKLMNOPQRSTUVWXYZ")
 mapping_initiale = {lettre: i + 1 for i, lettre in enumerate(alphabet)}
+# Application de la conversion des initiales en valeurs numériques dans une nouvelle colonne
 VueDf['initiale_num'] = VueDf['initiale'].map(mapping_initiale)
 
 # Encodage numérique des mentions au bac
@@ -34,8 +41,6 @@ VueDf['niveau_etude_num'] = VueDf['niveau_etude'].map({
     "1ère année d'études supérieures": 3,
     "2nd année d'études supérieures": 4
 })
-
-print(VueDf[['prenom', 'initiale']].head(50))
 
 
 # %% Diagramme à bâtons : Moyenne en fonction de l'initiale
@@ -123,9 +128,7 @@ df_corr = VueDf[['initiale_num', 'code_postal',
 corr_matrix = df_corr.corr()
 print("Matrice de corrélation :\n", corr_matrix)
 
-# %% Régression linéaire multiple sans sklearn
-
-# Fonctions fournies en tp
+# %% Fonctions fournies en tp
 
 
 def coefficients_regression_lineaire(X, y):
@@ -141,43 +144,50 @@ def coefficients_regression_lineaire(X, y):
     return theta.flatten()
 
 
-def predire_y(X, theta):
-    """
-    Calcule y_pred à partir de X et theta.
-    X : ndarray de shape (n, m)
-    theta : ndarray de shape (m+1,) — inclut l'intercept
-    Retourne : y_pred (ndarray de shape (n,))
-    """
-    n_samples = X.shape[0]
-    X_aug = np.hstack((np.ones((n_samples, 1)), X))
+# %% Régression linéaire multiple
+
+# Variables explicatives : moyenne, mention au bac, niveau d'étude, code postal
+X_Ar = VueDf[['moyenne', 'mention_bac_num',
+              'niveau_etude_num', 'code_postal']].to_numpy()
+# Variable cible : initiale du prénom
+y_Ar = VueDf['initiale_num'].to_numpy()
+
+# Calcul des coefficients
+theta = coefficients_regression_lineaire(X_Ar, y_Ar)
+
+print("Coefficients :", theta)
+
+
+# %% Coefficient de corrélation multiple avec la fonction de sklearn
+
+modele_sk = LinearRegression()
+modele_sk.fit(X_Ar, y_Ar)
+r2_sklearn = modele_sk.score(X_Ar, y_Ar)
+
+print("R2 avec sklearn :", r2_sklearn)
+
+# %% Coefficient de corr ́elation multiple avec la formule vue dans le Cours 1
+
+
+def coefficient_correlation_multiple_cours(X, y, theta):
+
+    N = X.shape[0]  # Nombre d'individus
+
+    # Matrice augmentée avec colonne de 1
+    X_aug = np.hstack((np.ones((N, 1)), X))
     y_pred = X_aug @ theta
-    return y_pred
+
+    # Calcul selon la formule du cours
+    numerateur = np.sum((y_pred - y) ** 2)
+    var_y = np.var(y, ddof=1)
+    denominateur = N * var_y
+
+    resu = 1 - (numerateur / denominateur)
+
+    return resu
 
 
-def coefficient_correlation_multiple(y_true, y_pred):
-    """
-    Calcule le coefficient de corrélation multiple (R^2)
-    y_true : valeurs réelles (shape: (n,))
-    y_pred : valeurs prédites (shape: (n,))
-    Retourne : R² (float)
-    """
-    y_true = np.ravel(y_true)
-    y_pred = np.ravel(y_pred)
-    ss_res = np.sum((y_true - y_pred)**2)
-    ss_tot = np.sum((y_true - np.mean(y_true))**2)
-    r_squared = 1 - ss_res / ss_tot
-    return r_squared
+# Calcul et affichage du résultat
+resu = coefficient_correlation_multiple_cours(X_Ar, y_Ar, theta)
 
-# %% Régression linéaire multiple sans sklearn
-
-
-X = VueDf[['moyenne', 'mention_bac_num',
-           'niveau_etude_num', 'code_postal']].to_numpy()
-y = VueDf['initiale_num'].to_numpy()
-
-theta = coefficients_regression_lineaire(X, y)
-y_pred = predire_y(X, theta)
-r2 = coefficient_correlation_multiple(y, y_pred)
-
-print("Coefficients du modèle :", theta)
-print("Coefficient de corrélation multiple R² :", r2)
+print("Coefficient de corrélation multiple (R²) :", resu)
